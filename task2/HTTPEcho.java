@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class HTTPEcho
 {
@@ -26,15 +27,51 @@ public class HTTPEcho
             connectionSocket.setSoTimeout(60000);
 
 
+            String statusCode = "";
+
             //Buffer for client requests
             byte[] fromClientBuffer = new byte[BUFFERSIZE];
-            //Length of the request as in how many bytes?
+            //Read data from input to the buffer, also saves length in nr of bytes?
             int fromClientLength = connectionSocket.getInputStream().read(fromClientBuffer);
 
 
+            //Make status line by first taking the request line of the request
+            //message.
+            //It then splits the request line into its three components, i
+            //only use the method field and HTTP version field
+            String requestMessage = new String(fromClientBuffer, StandardCharsets.UTF_8);
+            String[] splitRequestMessage = requestMessage.split("\r\n");
+            String requestLine = splitRequestMessage[0];
 
-            //byte[] toClientBuffer =
-            connectionSocket.getOutputStream().write(fromClientBuffer);
+            String[] splitRequestLine = requestLine.split(" ");
+            String method = splitRequestLine[0];
+            String httpVersion = splitRequestLine[2];
+
+            switch(method)
+            {
+                case "GET":
+                    statusCode = "200 OK\r\n";
+                    break;
+                case "PUT":
+                    statusCode = "501 Not Implemented\r\n";
+                    break;
+                case "POST":
+                    statusCode = "501 Not Implemented\r\n";
+            }
+            statusCode = httpVersion + " " + statusCode;
+
+            //Get response header
+            String responseMessage =
+            "Content-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n" + requestMessage;
+
+            responseMessage = statusCode + responseMessage + "\r\n";
+
+
+            byte[] encodedResponse = responseMessage.getBytes(StandardCharsets.UTF_8);
+
+
+            //Respond with the data that was given and status code
+            connectionSocket.getOutputStream().write(encodedResponse, 0, encodedResponse.length);
             connectionSocket.close();
         }
     }
