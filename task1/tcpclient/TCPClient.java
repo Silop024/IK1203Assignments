@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 public class TCPClient
 {
-    private static int BUFFERSIZE = 10240;
+    private static int BUFFERSIZE = 1024;
 
     public static String askServer(String hostname, int port, String toServer) throws IOException
     {
@@ -17,7 +17,7 @@ public class TCPClient
 
         //Establish TCP connection with a timeout
         Socket clientSocket = new Socket(hostname, port);
-        clientSocket.setSoTimeout(10000);
+        clientSocket.setSoTimeout(5000);
 
         //Send request to server
         clientSocket.getOutputStream().write(encodedToServer, 0, encodedToServer.length);
@@ -25,19 +25,31 @@ public class TCPClient
         //Get server response
         //byte[] response = clientSocket.getInputStream().readAllBytes();
         //int responseLength = response.length;
+        StringBuilder sb = new StringBuilder();
+        int max = 10;
+        int count = 0;
 
-        int responseLength = clientSocket.getInputStream().read(responseBuffer);
+        int responseLength = clientSocket.getInputStream().read(responseBuffer, 0, 1024);
+        if(responseLength >= 1024)
+            while(responseLength != -1 && count < max)
+            {
+                sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
+                responseLength = clientSocket.getInputStream().read(responseBuffer, 0, 1024);
+                count++;
+            }
+        else
+            sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
         //byte[] response = new byte[responseLength];
         //for(int i = 0; i < responseLength; i++)
         //    response[i] = responseBuffer[i];
 
-        System.out.println(responseLength);
+        //System.out.println(responseLength);
 
         //Decode our server response
-        String decodedResponse = new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8);
+        //String decodedResponse = new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8);
 
         clientSocket.close();
-        return decodedResponse;
+        return sb.toString();
     }
 
     public static String askServer(String hostname, int port) throws IOException
@@ -47,26 +59,38 @@ public class TCPClient
 
         //Establish TCP connection with a timeout
         Socket clientSocket = new Socket(hostname, port);
-        clientSocket.setSoTimeout(10000);
+        clientSocket.setSoTimeout(5000);
 
 
 
         //Get server response
         //byte[] response = clientSocket.getInputStream().readAllBytes();
         //int responseLength = response.length;
+        StringBuilder sb = new StringBuilder();
+        int max = 10;
+        int count = 0;
 
-        int responseLength = clientSocket.getInputStream().read(responseBuffer);
+        int responseLength = clientSocket.getInputStream().read(responseBuffer, 0, 1024);
+        if(responseLength >= 1024)
+            while(responseLength != -1 && count < max)
+            {
+                sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
+                responseLength = clientSocket.getInputStream().read(responseBuffer, 0, 1024);
+                count++;
+            }
+        else
+            sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
         //byte[] response = new byte[responseLength];
         //for(int i = 0; i < responseLength; i++)
         //    response[i] = responseBuffer[i];
 
-        System.out.println(responseLength);
+        //System.out.println(responseLength);
 
 
         //Decode our server response
-        String decodedResponse = new String(responseBuffer, 0, responseLength,StandardCharsets.UTF_8);
+        //String decodedResponse = new String(responseBuffer, 0, responseLength,StandardCharsets.UTF_8);
 
         clientSocket.close();
-        return decodedResponse;
+        return sb.toString();
     }
 }
