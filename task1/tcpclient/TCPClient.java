@@ -23,8 +23,6 @@ public class TCPClient
         clientSocket.getOutputStream().write(encodedToServer, 0, encodedToServer.length);
 
         //Get server response
-        //byte[] response = clientSocket.getInputStream().readAllBytes();
-        //int responseLength = response.length;
         StringBuilder sb = new StringBuilder();
         int max = 10;
         int count = 0;
@@ -39,14 +37,6 @@ public class TCPClient
             }
         else
             sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
-        //byte[] response = new byte[responseLength];
-        //for(int i = 0; i < responseLength; i++)
-        //    response[i] = responseBuffer[i];
-
-        //System.out.println(responseLength);
-
-        //Decode our server response
-        //String decodedResponse = new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8);
 
         clientSocket.close();
         return sb.toString();
@@ -64,8 +54,6 @@ public class TCPClient
 
 
         //Get server response
-        //byte[] response = clientSocket.getInputStream().readAllBytes();
-        //int responseLength = response.length;
         StringBuilder sb = new StringBuilder();
         int max = 10;
         int count = 0;
@@ -80,15 +68,6 @@ public class TCPClient
             }
         else
             sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
-        //byte[] response = new byte[responseLength];
-        //for(int i = 0; i < responseLength; i++)
-        //    response[i] = responseBuffer[i];
-
-        //System.out.println(responseLength);
-
-
-        //Decode our server response
-        //String decodedResponse = new String(responseBuffer, 0, responseLength,StandardCharsets.UTF_8);
 
         clientSocket.close();
         return sb.toString();
