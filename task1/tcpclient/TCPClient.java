@@ -5,12 +5,13 @@ import java.nio.charset.StandardCharsets;
 
 public class TCPClient
 {
-    private static int BUFFERSIZE = 9216;
+    private static int BUFFERSIZE = 10240;
 
     public static String askServer(String hostname, int port, String toServer) throws IOException
     {
         //Buffer for answer from server
         byte[] responseBuffer = new byte[BUFFERSIZE];
+
         //Encode our toServer string to bytes
         byte[] encodedToServer = toServer.getBytes(StandardCharsets.UTF_8);
 
@@ -22,14 +23,18 @@ public class TCPClient
         clientSocket.getOutputStream().write(encodedToServer, 0, encodedToServer.length);
 
         //Get server response
-        int responseLength = clientSocket.getInputStream().read(responseBuffer);
+        //byte[] response = clientSocket.getInputStream().readAllBytes();
+        //int responseLength = response.length;
 
-        byte[] response = new byte[responseLength];
-        for(int i = 0; i < responseLength; i++)
-            response[i] = responseBuffer[i];
-        //Decode our server response
-        String decodedResponse = new String(response, StandardCharsets.UTF_8);
+        int responseLength = clientSocket.getInputStream().read(responseBuffer);
+        //byte[] response = new byte[responseLength];
+        //for(int i = 0; i < responseLength; i++)
+        //    response[i] = responseBuffer[i];
+
         System.out.println(responseLength);
+
+        //Decode our server response
+        String decodedResponse = new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8);
 
         clientSocket.close();
         return decodedResponse;
@@ -47,16 +52,19 @@ public class TCPClient
 
 
         //Get server response
+        //byte[] response = clientSocket.getInputStream().readAllBytes();
+        //int responseLength = response.length;
+
         int responseLength = clientSocket.getInputStream().read(responseBuffer);
+        //byte[] response = new byte[responseLength];
+        //for(int i = 0; i < responseLength; i++)
+        //    response[i] = responseBuffer[i];
 
-        byte[] response = new byte[responseLength];
-        for(int i = 0; i < responseLength; i++)
-            response[i] = responseBuffer[i];
-
-        //Decode our server response
-        String decodedResponse = new String(response, StandardCharsets.UTF_8);
         System.out.println(responseLength);
 
+
+        //Decode our server response
+        String decodedResponse = new String(responseBuffer, 0, responseLength,StandardCharsets.UTF_8);
 
         clientSocket.close();
         return decodedResponse;
