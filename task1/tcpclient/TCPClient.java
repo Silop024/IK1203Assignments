@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 public class TCPClient
 {
-    private static int BUFFERSIZE = 1024;
+    private static int BUFFERSIZE = 9216;
 
     public static String askServer(String hostname, int port, String toServer) throws IOException
     {
@@ -24,8 +24,12 @@ public class TCPClient
         //Get server response
         int responseLength = clientSocket.getInputStream().read(responseBuffer);
 
+        byte[] response = new byte[responseLength];
+        for(int i = 0; i < responseLength; i++)
+            response[i] = responseBuffer[i];
         //Decode our server response
-        String decodedResponse = new String(responseBuffer, StandardCharsets.UTF_8);
+        String decodedResponse = new String(response, StandardCharsets.UTF_8);
+        System.out.println(responseLength);
 
         clientSocket.close();
         return decodedResponse;
@@ -45,8 +49,14 @@ public class TCPClient
         //Get server response
         int responseLength = clientSocket.getInputStream().read(responseBuffer);
 
+        byte[] response = new byte[responseLength];
+        for(int i = 0; i < responseLength; i++)
+            response[i] = responseBuffer[i];
+
         //Decode our server response
-        String decodedResponse = new String(responseBuffer, StandardCharsets.UTF_8);
+        String decodedResponse = new String(response, StandardCharsets.UTF_8);
+        System.out.println(responseLength);
+
 
         clientSocket.close();
         return decodedResponse;
