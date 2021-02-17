@@ -31,22 +31,43 @@ public class HTTPEcho
 
             //Buffer for client requests
             byte[] fromClientBuffer = new byte[BUFFERSIZE];
-            //Read data from input to the buffer, also saves length in nr of bytes?
+            //Read data from input to the buffer, also saves length of input
             int fromClientLength = connectionSocket.getInputStream().read(fromClientBuffer);
+            connectionSocket.setKeepAlive(true);
 
+            //Get rid of unused buffer space
+            byte[] byteMessage = new byte[fromClientLength];
+            for(int i = 0; i < fromClientLength; i++)
+                byteMessage[i] = fromClientBuffer[i];
 
             //Make status line by first taking the request line of the request
             //message.
             //It then splits the request line into its three components, i
             //only use the method field and HTTP version field
-            String requestMessage = new String(fromClientBuffer, StandardCharsets.UTF_8);
-            String[] splitRequestMessage = requestMessage.split("\r\n");
-            String requestLine = splitRequestMessage[0];
-
-            String[] splitRequestLine = requestLine.split(" ");
-            String method = splitRequestLine[0];
-            String httpVersion = splitRequestLine[2];
-
+            String requestMessage = "";
+            String requestLine = "";
+            String method = "";
+            String httpVersion = "HTTP/1.1";
+            try
+            {
+                requestMessage = new String(byteMessage, StandardCharsets.UTF_8);
+                String[] splitRequestMessage = requestMessage.split("\r\n");
+                requestLine = splitRequestMessage[0];
+            }
+            catch(Exception e)
+            {
+                statusCode = "400 Bad Request\r\n";
+            }
+            try
+            {
+                String[] splitRequestLine = requestLine.split(" ");
+                method = splitRequestLine[0];
+                httpVersion = splitRequestLine[2];
+            }
+            catch(Exception ex)
+            {
+                statusCode = "400 Bad Request\r\n";
+            }
             switch(method)
             {
                 case "GET":
@@ -57,12 +78,13 @@ public class HTTPEcho
                     break;
                 case "POST":
                     statusCode = "501 Not Implemented\r\n";
+                    break;
             }
             statusCode = httpVersion + " " + statusCode;
 
             //Get response header
             String responseMessage =
-            "Content-Type: text/plain; charset=utf-8\r\nConnection: close\r\n\r\n" + requestMessage;
+            "Content-Type: text/plain; charset=utf-8\r\nConnection: keep-alive\r\n\r\n" + requestMessage;
 
             responseMessage = statusCode + responseMessage + "\r\n";
 
@@ -70,8 +92,7 @@ public class HTTPEcho
             byte[] encodedResponse = responseMessage.getBytes(StandardCharsets.UTF_8);
 
 
-            //Respond with the data that was given and status code
-            connectionSocket.getOutputStream().write(encodedResponse, 0, encodedResponse.length);
+            connectionSocket.getOutputStream().write(encodedResponse);
             connectionSocket.close();
         }
     }
