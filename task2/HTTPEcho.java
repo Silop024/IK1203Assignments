@@ -29,16 +29,14 @@ public class HTTPEcho
             connectionSocket.setKeepAlive(true);
             InputStream in = connectionSocket.getInputStream();
 
-
-            //Buffer for client requests
-            byte[] fromClientBuffer = new byte[BUFFERSIZE];
-
+            //Build the response message
             StringBuilder sb = new StringBuilder();
 
             //Response headers
             sb.append("HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: keep-alive\r\n\r\n");
 
             //Data data data...
+            byte[] fromClientBuffer = new byte[BUFFERSIZE];
             int fromClientLength = in.read(fromClientBuffer, 0, 1024);
 
             if(fromClientLength >= 1024)
