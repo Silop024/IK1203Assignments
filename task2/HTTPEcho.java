@@ -8,6 +8,7 @@ public class HTTPEcho
 
     public static void main(String[] args) throws Exception
     {
+        Socket connectionSocket;
         int port = 0;
 
         try
@@ -23,74 +24,35 @@ public class HTTPEcho
         while(true)
         {
             //Establish the TCP connection with the client
-            Socket connectionSocket = welcomeSocket.accept();
+            connectionSocket = welcomeSocket.accept();
             connectionSocket.setSoTimeout(60000);
+            connectionSocket.setKeepAlive(true);
+            InputStream in = connectionSocket.getInputStream();
 
-
-            String statusCode = "";
 
             //Buffer for client requests
             byte[] fromClientBuffer = new byte[BUFFERSIZE];
-            //Read data from input to the buffer, also saves length of input
-            int fromClientLength = connectionSocket.getInputStream().read(fromClientBuffer);
-            connectionSocket.setKeepAlive(true);
 
-            //Get rid of unused buffer space
-            byte[] byteMessage = new byte[fromClientLength];
-            for(int i = 0; i < fromClientLength; i++)
-                byteMessage[i] = fromClientBuffer[i];
+            StringBuilder sb = new StringBuilder();
 
-            //Make status line by first taking the request line of the request
-            //message.
-            //It then splits the request line into its three components, i
-            //only use the method field and HTTP version field
-            String requestMessage = "";
-            String requestLine = "";
-            String method = "";
-            String httpVersion = "HTTP/1.1";
-            try
-            {
-                requestMessage = new String(byteMessage, StandardCharsets.UTF_8);
-                String[] splitRequestMessage = requestMessage.split("\r\n");
-                requestLine = splitRequestMessage[0];
-            }
-            catch(Exception e)
-            {
-                statusCode = "400 Bad Request\r\n";
-            }
-            try
-            {
-                String[] splitRequestLine = requestLine.split(" ");
-                method = splitRequestLine[0];
-                httpVersion = splitRequestLine[2];
-            }
-            catch(Exception ex)
-            {
-                statusCode = "400 Bad Request\r\n";
-            }
-            switch(method)
-            {
-                case "GET":
-                    statusCode = "200 OK\r\n";
-                    break;
-                case "PUT":
-                    statusCode = "501 Not Implemented\r\n";
-                    break;
-                case "POST":
-                    statusCode = "501 Not Implemented\r\n";
-                    break;
-            }
-            statusCode = httpVersion + " " + statusCode;
+            //Response headers
+            sb.append("HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nConnection: keep-alive\r\n\r\n");
 
-            //Get response header
-            String responseMessage =
-            "Content-Type: text/plain; charset=utf-8\r\nConnection: keep-alive\r\n\r\n" + requestMessage;
+            //Data data data...
+            int fromClientLength = in.read(fromClientBuffer, 0, 1024);
 
-            responseMessage = statusCode + responseMessage + "\r\n";
+            if(fromClientLength >= 1024)
+                while(fromClientLength > 4 && fromClientLength != -1)
+                {
+                    sb.append(new String(fromClientBuffer, 0, fromClientLength, StandardCharsets.UTF_8));
+                    fromClientLength = in.read(fromClientBuffer, 0, 1024);
+                    System.out.println("Length: " + fromClientLength);
+                }
+            else
+                sb.append(new String(fromClientBuffer, 0, fromClientLength, StandardCharsets.UTF_8));
+            sb.append("\r\n");
 
-
-            byte[] encodedResponse = responseMessage.getBytes(StandardCharsets.UTF_8);
-
+            byte[] encodedResponse = sb.toString().getBytes(StandardCharsets.UTF_8);
 
             connectionSocket.getOutputStream().write(encodedResponse);
             connectionSocket.close();
