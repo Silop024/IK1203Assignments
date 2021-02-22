@@ -48,7 +48,6 @@ public class HTTPEcho
                 }
             else
                 sb.append(new String(fromClientBuffer, 0, fromClientLength, StandardCharsets.UTF_8));
-            sb.append("\r\n");
 
             byte[] encodedResponse = sb.toString().getBytes(StandardCharsets.UTF_8);
 
