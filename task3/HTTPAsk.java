@@ -40,9 +40,9 @@ public class HTTPAsk
             System.out.println("String (if any): " + urlComponents[2]);
 
             if(urlComponents[2] != null)
-                TCPClient.askServer(urlComponents[0], urlComponents[1], urlComponents[2]);
+                TCPClient.askServer(urlComponents[0], Integer.parseInt(urlComponents[1]), urlComponents[2]);
             else
-                TCPClient.askServer(urlComponents[0], urlComponents[1]);
+                TCPClient.askServer(urlComponents[0], Integer.parseInt(urlComponents[1]));
         }
     }
 
