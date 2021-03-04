@@ -25,43 +25,24 @@ public class HTTPAsk2
             connectionSocket.setSoTimeout(60000);
 
             InputStream fromClient = connectionSocket.getInputStream();
-            OutputStream toClient = connectionSocket.getOutputStream();
 
             //Get array containing request type, address, http version
-            String[] requestLine;
-            String[] parameters = new String[3];
-            String response = "";
-            try
-            {
-                requestLine = getRequest(fromClient);
+            String[] requestLine = getRequest(fromClient);
 
-                if(!requestLine[1].startsWith("/ask"))
-                {
-                    toClient.write("HTTP/1.1 400 Bad Request\r\n\r\n".getBytes());
-                    connectionSocket.close();
-                }
-                else
-                {
-                    parameters = getParameters(requestLine[1]);
+            System.out.println("Request type: " + requestLine[0]);
+            System.out.println("URL: " + requestLine[1]);
+            System.out.println("HTTP version: " + requestLine[2]);
 
-                    if(parameters[2] != null)
-                        response = TCPClient.askServer(parameters[0], Integer.parseInt(parameters[1]), parameters[2]);
-                    else
-                        response = TCPClient.askServer(parameters[0], Integer.parseInt(parameters[1]));
-                }
-            }
-            catch(Exception e)
-            {
-                toClient.write("HTTP/1.1 400 Bad Request\r\n\r\n".getBytes());
-                connectionSocket.close();
-            }
-            
-            if(!connectionSocket.isClosed())
-            {
-                toClient.write("HTTP/1.1 200 OK\r\n".getBytes());
-                toClient.write(response.getBytes());
-                connectionSocket.close();
-            }
+            String[] urlComponents = getParameters(requestLine[1], requestLine[3]);
+
+            System.out.println("\nHostname: " + urlComponents[0]);
+            System.out.println("Port: " + urlComponents[1]);
+            System.out.println("String (if any): " + urlComponents[2]);
+
+            if(urlComponents[2] != null)
+                TCPClient.askServer(urlComponents[0], Integer.parseInt(urlComponents[1]), urlComponents[2]);
+            else
+                TCPClient.askServer(urlComponents[0], Integer.parseInt(urlComponents[1]));
         }
     }
 
@@ -75,8 +56,16 @@ public class HTTPAsk2
         {
             //Get request line
             String requestMessage = new String(byteMessage, StandardCharsets.UTF_8);
+            System.out.println(requestMessage);
             String[] splitRequestMessage = requestMessage.split("\r\n");
             String requestLine = splitRequestMessage[0];
+
+            String hostLine = splitRequestMessage[1];
+            String hostname = getHostname(hostLine);
+
+            requestLine += " " + hostname;
+
+            System.out.println("Request line: " + requestLine);
 
             return requestLine.split(" ");
         }
@@ -88,20 +77,38 @@ public class HTTPAsk2
         return request;
     }
 
-    private static String[] getParameters(String url) throws Exception
+    private static String[] getParameters(String url, String host) throws MalformedURLException
     {
-        String[] parameters = new String[3];
-        URI uri = new URI(url);
+        String[] components = new String[3];
+        try
+        {
+            URI u = new URI(url);
 
-        String paramString = uri.getQuery();
-        String[] p = paramString.split("&|=");
+            //Get hostname and port
+            String[] hostParts = host.split(":");
+            components[0] = hostParts[0];
+            System.out.println("Hostname: " + components[0]);
+            components[1] = hostParts[1];
+            System.out.println("Port: " + components[1]);
 
-        int j = 0;
-        for(int i = 1; i < p.length; i += 2)
-            parameters[j++] = p[i];
+            //Get string parameter
+            components[2] = u.getFragment();
+            System.out.println("Fragment: " + components[2]);
 
-        return parameters;
+        }
+        catch(Exception ex)
+        {
+            System.err.println("URL in wrong format");
+            System.exit(1);
+        }
+        return components;
     }
 
+    private static String getHostname(String h)
+    {
+        String[] hostLine = h.split(" ");
+        String hostname = hostLine[1];
 
+        return hostname;
+    }
 }

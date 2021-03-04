@@ -17,7 +17,6 @@ public class TCPClient
         //Establish TCP connection with a timeout
         Socket clientSocket = new Socket(hostname, port);
         clientSocket.setSoTimeout(10000);
-
         //Send request to server
         clientSocket.getOutputStream().write(encodedToServer, 0, encodedToServer.length);
 
@@ -25,7 +24,6 @@ public class TCPClient
         StringBuilder sb = new StringBuilder();
         int max = 20;
         int count = 0;
-
         InputStream in = clientSocket.getInputStream();
 
         int responseLength = in.read(responseBuffer, 0, 1024);
@@ -35,10 +33,10 @@ public class TCPClient
                 sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
                 responseLength = in.read(responseBuffer, 0, 1024);
                 count++;
+                System.out.println(sb.toString());
             }
         else
             sb.append(new String(responseBuffer, 0, responseLength, StandardCharsets.UTF_8));
-
         clientSocket.close();
         return sb.toString();
     }
