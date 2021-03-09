@@ -15,13 +15,13 @@ public class AllCap
         {
             Socket connectionSocket = welcomeSocket.accept();
 
-            //byte[] buffer = new byte[BUFFERSIZE];
+            byte[] buffer = new byte[BUFFERSIZE];
 
-            //int length = connectionSocket.getInputStream().readAllBytes(buffer);
+            int length = connectionSocket.getInputStream().read(buffer);
 
-            //String sentence = new String(buffer, 0, length, StandardCharsets.UTF_8);
+            String sentence = new String(buffer, 0, length, StandardCharsets.UTF_8);
             System.out.println("hello");
-            String sentence = new String(connectionSocket.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
             String cap = sentence.toUpperCase() + "\r\n";
 
             byte[] toClient = cap.getBytes(StandardCharsets.UTF_8);
